@@ -1,2 +1,3 @@
 # iot_web_services
-WEB Services for IOT using the MQTT procol
+
+WEB Services for IOT using the MQTT procol. Using EMQX broker.
