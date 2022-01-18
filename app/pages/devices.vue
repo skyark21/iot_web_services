@@ -43,7 +43,7 @@
                     min-width="50"
                     align="center"
                 >
-                    <div slot-scope="{ row, $index}">
+                    <div slot-scope="{$index}">
                         {{$index + 1}}
                     </div>
                 </el-table-column>
@@ -60,23 +60,35 @@
                     label="Template"
                 ></el-table-column>
                 <el-table-column label="Actions">
-                    <div slot-scope="{row}">
+                    <div slot-scope="{ row, $index }">
+                        <el-tooltip style="margin-right:10px">
+                            <i class="fas fa-database " :class="{'text-success' : row.saverRule, 'text-dark':!row.saverRule }"></i>
+                        </el-tooltip>
+                        <el-tooltip
+                            content="Update Database"
+                            effect="light">
+                                <base-switch @click="updateSaverRuleStatus($index)"
+                                    :value="row.saverRule" 
+                                    type="primary" 
+                                    on-text="On"
+                                    off-text="Off">
+                                </base-switch>
+                            </el-tooltip>
                         <el-tooltip 
                             content="Delete" 
                             effect="light" 
                             :open-delay="300" 
                             placement="top">
-
                             <base-button type="danger" icon size="sm" class="btn-link" @click="deleteDevice(row)">
                                 <i class="tim-icons icon-simple-remove"></i>
                             </base-button>
-
                         </el-tooltip>
                     </div>
                 </el-table-column>
             </el-table>
             </card>
         </div>
+        <Json :value="devices"></Json>
     </div>
 </template>
 
@@ -99,19 +111,25 @@ export default {
                     name: "Home",
                     dId: "023F69A",
                     templateName: "Power Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a"
+                    templateId: "1b51rytbns35bns1g51b63a",
+                    saverRule: false,
+                    count:15632
                 },
                 {
                     name: "Office",
                     dId: "023699A",
                     templateName: "Temperature Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a"
+                    templateId: "1b51rytbns35bns1g51b63a",
+                    saverRule: true,
+                    count:1486
                 },
                 {
                     name: "Facility1",
                     dId: "082A69A",
                     templateName: "Humidity Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a"
+                    templateId: "1b51rytbns35bns1g51b63a",
+                    saverRule: false,
+                    count:895
                 }
             ]
         };
@@ -119,7 +137,11 @@ export default {
     methods: {
         deleteDevice(device){
             alert(`DELETING ${device.name}`)
-        }
+        },
+        updateSaverRuleStatus(index){
+            console.log(index)
+            this.devices[index].saverRule = !this.devices[index].saverRule
+        },
     }
 };
 </script>
