@@ -25,8 +25,6 @@ import BasePagination from './BasePagination.vue';
 
 import SidebarPlugin from './SidebarPlugin/';
 
-
-
 export {
   BaseCheckbox,
   IconCheckbox,
@@ -48,5 +46,6 @@ export {
   RouteBreadCrumb,
   Modal,
   BaseButton,
-  LoadingPanel
+  LoadingPanel,
+  
 };

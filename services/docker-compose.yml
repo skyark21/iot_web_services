@@ -1,0 +1,88 @@
+version: "3.8"
+
+volumes:
+  vol-emqx-data:
+    name: foo-emqx-data
+  vol-emqx-etc:
+    name: foo-emqx-etc
+  vol-emqx-log:
+    name: foo-emqx-log
+  vol-emqx-lib:
+    name: foo-emqx-lib
+  vol-mongo-data:
+    name: mongo-data
+  vol-mongo-config:
+    name: mongo-config
+
+services:
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.4.15
+    restart: always
+    environment:
+      TZ: 'America/Hermosillo'
+      MONGO_INITDB_ROOT_USERNAME: 'skyark'
+      MONGO_INITDB_ROOT_PASSWORD: 'pocho21'
+    volumes:
+      - vol-mongo-data:/data/db
+      - vol-mongo-config:/data/configdb
+    ports:
+      - 27017:27017
+
+  emqx:
+    container_name: emqx
+    image: emqx/emqx:4.2.3
+    restart: always
+    ports:
+      - 8883:8883
+      - 1883:1883
+      - 8083:8083
+      - 8084:8084
+      - 8085:8081
+      - 18083:18083
+      - 18084:18084
+    volumes:
+      - vol-emqx-data:/opt/emqx/data
+      - vol-emqx-etc:/opt/emqx/etc
+      - vol-emqx-log:/opt/emqx/log
+      - vol-emqx-lib:/opt/emqx/lib
+    links:
+      - mongo
+    extra_hosts:
+      - "localhost:10.29.15.5"
+    environment:
+      EMQX_NAME: iotify
+      EMQX_HOST: 127.0.0.1
+      EMQX_LISTENER__TCP__EXTERNAL__MAX_CONNECTIONS: 1000
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: "pocho21"
+      TZ: "America/Hermosillo"
+      EMQX_LOADED_PLUGINS: "emqx_recon,emqx_retainer,emqx_management,emqx_dashboard, emqx_auth_mongo"
+      #AUTH_ANONYMOUS
+      EMQX_ALLOW_ANONYMOUS: "false"
+      #SEGURIDAD TOPICOS
+      EMQX_ACL_NOMATCH: "deny"
+      #MONGODB CONF
+      EMQX_AUTH__MONGO__TYPE: single
+      EMQX_AUTH__MONGO__TOPOLOGY__POOL_SIZE: 1
+      EMQX_AUTH__MONGO__TOPOLOGY__MAX_OVERFLOWN: 0
+      EMQX_AUTH__MONGO__SERVER: "mongo:27017"
+      EMQX_AUTH__MONGO__POOL: 8
+      EMQX_AUTH__MONGO__LOGIN: "skyark"
+      EMQX_AUTH__MONGO__PASSWORD: "pocho21"
+      EMQX_AUTH__MONGO__AUTH_SOURCE: admin
+      EMQX_AUTH__MONGO__DATABASE: "iotify"
+      #MONGODB SUPER QUERY
+      EMQX_AUTH__MONGO__SUPER_QUERY__COLLECTION: "emqxauthrules"
+      EMQX_AUTH__MONGO__SUPER_QUERY__SUPER_FIELD: "is_superuser"
+      EMQX_AUTH__MONGO__SUPER_QUERY__SELECTOR: "username=%u"
+      EMQX_AUTH__MONGO__SUPER_QUERY: "off"
+      #MONGODB AUTH QUERY
+      EMQX_AUTH__MONGO__AUTH_QUERY__PASSWORD_HASH: plain
+      EMQX_AUTH__MONGO__AUTH_QUERY__PASSWORD_FIELD: "password"
+      EMQX_AUTH__MONGO__AUTH_QUERY__SELECTOR: "username=%u"
+      EMQX_AUTH__MONGO__AUTH_QUERY__COLLECTION: "emqxauthrules"
+      #MONGODB ACL QUERY
+      EMQX_AUTH__MONGO__ACL_QUERY: "on"
+      EMQX_AUTH__MONGO_ACL_QUERY__COLLECTION: "emqxauthrules"
+      EMQX_AUTH__MONGO__ACL_QUERY__SELECTOR: "username=%u"

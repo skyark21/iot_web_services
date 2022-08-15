@@ -1,147 +1,310 @@
+import { TableColumn, Option } from 'element-ui';
 <template>
-    <div>
-        <!-- CRUD DEVICES -->
+  <div>
+    <!-- ADD NEW DEVICE -->
+    <div class="col-md-12">
+      <card class="card-plain" body-classes="table-full-width">
+        <template slot="header">
+          <h4 class="card-title">Add New Device</h4>
+        </template>
         <div class="row">
-            <card>
-            <div slot="header">
-                <h4 class="card-title">Add New Device</h4>
-            </div>
-            <div class="row">
-                <div class="col-4">
-                    <base-input label="Device Name" type="text" placeholder="Ex: Home, Termometer..."></base-input>
-                </div>
-                <div class="col-4">
-                    <base-input label="Device ID" type="text" placeholder="Ex: 156-569-0"></base-input>
-                </div>
-                <div class="col-4">
-                    <slot name="label">
-                        <label>Template</label>
-                    </slot>
-                    <el-select value="1" placeholder="Select Template" class="select-primary" style="width:100%">
-                        <el-option class="text-dark" value="Template 1" label="Template 1"></el-option>
-                        <el-option class="text-dark" value="Template 2" label="Template 2"></el-option>
-                        <el-option class="text-dark" value="Template 3" label="Template 3"></el-option>
-                    </el-select>
-                </div>
-            </div>
-            <div class="row pull-right">
-                <div class="col-12">
-                    <base-button type="primary" class="mb-2" size="lg">Add</base-button>
-                </div>
-            </div>
-        </card>
+          <div class="col-4">
+            <base-input
+              label="Device Name"
+              type="text"
+              placeholder="Ex: Temperature Office"
+              v-model="newDevice.name"
+            ></base-input>
+          </div>
+          <div class="col-4">
+            <base-input
+              label="Device Number"
+              type="text"
+              placeholder="Ex: 321C-43FH"
+              v-model="newDevice.dId"
+            ></base-input>
+          </div>
+          <div class="col-4">
+            <slot name="label">
+              <label>Template</label>
+            </slot>
+            <el-select
+              v-model="selectedIndexTemplate"
+              placeholder="Select Template"
+              class="select-primary"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="(template, index) in templates"
+                :key="template._id"
+                class="text-dark"
+                :value="index"
+                :label="template.name"
+              ></el-option>
+            </el-select>
+          </div>
         </div>
-        <!-- DEVICES TABLE -->
-        <div class="row">
-            <card>
-            <div slot="header">
-                <h4 class="card-title">Device</h4>
-            </div>
-            <el-table :data="devices">
-                <el-table-column
-                    label="#"
-                    min-width="50"
-                    align="center"
-                >
-                    <div slot-scope="{$index}">
-                        {{$index + 1}}
-                    </div>
-                </el-table-column>
-                <el-table-column
-                    prop="name"
-                    label="Name"
-                ></el-table-column>
-                <el-table-column
-                    prop="dId"
-                    label="Device ID"
-                ></el-table-column>
-                <el-table-column
-                    prop="templateName" 
-                    label="Template"
-                ></el-table-column>
-                <el-table-column label="Actions">
-                    <div slot-scope="{ row, $index }">
-                        <el-tooltip style="margin-right:10px">
-                            <i class="fas fa-database " :class="{'text-success' : row.saverRule, 'text-dark':!row.saverRule }"></i>
-                        </el-tooltip>
-                        <el-tooltip
-                            content="Update Database"
-                            effect="light">
-                                <base-switch @click="updateSaverRuleStatus($index)"
-                                    :value="row.saverRule" 
-                                    type="primary" 
-                                    on-text="On"
-                                    off-text="Off">
-                                </base-switch>
-                            </el-tooltip>
-                        <el-tooltip 
-                            content="Delete" 
-                            effect="light" 
-                            :open-delay="300" 
-                            placement="top">
-                            <base-button type="danger" icon size="sm" class="btn-link" @click="deleteDevice(row)">
-                                <i class="tim-icons icon-simple-remove"></i>
-                            </base-button>
-                        </el-tooltip>
-                    </div>
-                </el-table-column>
-            </el-table>
-            </card>
+        <div class="row pull-right">
+          <div class="col-12">
+            <base-button
+              @click="createNewDevice()"
+              type="primary"
+              class="mb-3"
+              size="lg"
+              >ADD</base-button
+            >
+          </div>
         </div>
-        <Json :value="devices"></Json>
+      </card>
     </div>
+    <!-- ADD NEW DEVICE -->
+    <!-- DEVICE TABLE -->
+    <div class="col-md-12">
+      <card class="card-plain" body-classes="table-full-width">
+        <template slot="header">
+          <h4 class="card-title">Device</h4>
+        </template>
+        <el-table
+          header-cell-class-name="table-transparent"
+          header-row-class-name="table-transparent"
+          row-class-name="table-transparent"
+          :data="$store.state.devices"
+        >
+          <el-table-column
+            min-width="150"
+            property="name"
+            label="Name"
+            sortable
+          ></el-table-column>
+          <el-table-column
+            property="dId"
+            label="Device"
+            sortable
+          ></el-table-column>
+          <el-table-column
+            property="templateName"
+            label="Template"
+            sortable
+          ></el-table-column>
+
+          <el-table-column label="Actions">
+            <div slot-scope="{ row, $index }">
+              <el-tooltip
+                content="Saver Status Indicator"
+                style="margin-right: 10px"
+              >
+                <i
+                  class="fa fa-database"
+                  :class="{
+                    'text-success': row.saverRule,
+                    'text-dark': !row.saverRule,
+                  }"
+                ></i>
+              </el-tooltip>
+              <el-tooltip content="Database Saver">
+                <base-switch
+                  type="primary"
+                  :value="row.saverRule"
+                  @click="updateServerRuleStatus($index)"
+                  on-text="On"
+                  off-text="Off"
+                >
+                </base-switch>
+              </el-tooltip>
+              <el-tooltip
+                content="Delete"
+                effect="light"
+                :open-delay="300"
+                placement="top"
+              >
+                <base-button
+                  type="danger"
+                  icon
+                  size="sm"
+                  class="btn-link"
+                  @click="deleteDevice(row)"
+                >
+                  <i class="tim-icons icon-simple-remove"></i>
+                </base-button>
+              </el-tooltip>
+            </div>
+          </el-table-column>
+        </el-table>
+      </card>
+    </div>
+    <!-- DEVICE TABLE -->
+    <!-- JSON VIEWER -->
+    <div class="row">
+      <card>
+        <div slot="header">
+          <h4 class="card-title">JSON Viewer</h4>
+        </div>
+        <Json :value="templates"></Json>
+      </card>
+    </div>
+    <!-- JSON VIEWER -->
+  </div>
 </template>
 
 <script>
-import {Table, TableColumn} from "element-ui";
-import {Select, Option} from "element-ui";
-import BaseButton from '../components/BaseButton.vue';
+import { Select, Table, TableColumn, Option } from "element-ui";
 export default {
-    components: {
-        [Table.name]: Table,
-        [TableColumn.name]: TableColumn,
-        [Option.name]: Option,
-        [Select.name]: Select,
-        [BaseButton.name]: BaseButton,
+  middleware: "authenticated",
+  components: {
+    [Table.name]: Table,
+    [TableColumn.name]: TableColumn,
+    [Option.name]: Option,
+    [Select.name]: Select,
+  },
+  data() {
+    return {
+      templates: [],
+      selectedIndexTemplate: null,
+      newDevice: {
+        name: "",
+        dId: "",
+        templateId: "",
+        templateName: "",
+      },
+    };
+  },
+  mounted() {
+    this.$store.dispatch("getDevices");
+    this.getTemplate();
+  },
+  methods: {
+    updateServerRuleStatus(index) {
+      this.devices[index].saverRule = !this.devices[index].saverRule;
     },
-    data(){
-        return{
-            devices: [
-                {
-                    name: "Home",
-                    dId: "023F69A",
-                    templateName: "Power Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a",
-                    saverRule: false,
-                    count:15632
-                },
-                {
-                    name: "Office",
-                    dId: "023699A",
-                    templateName: "Temperature Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a",
-                    saverRule: true,
-                    count:1486
-                },
-                {
-                    name: "Facility1",
-                    dId: "082A69A",
-                    templateName: "Humidity Sensor",
-                    templateId: "1b51rytbns35bns1g51b63a",
-                    saverRule: false,
-                    count:895
-                }
-            ]
-        };
+    async getTemplate() {
+      const axiosHeaders = {
+        headers: {
+          token: this.$store.state.auth.token,
+        },
+      };
+      console.log(axiosHeaders);
+      try {
+        const res = await this.$axios.get("/templates", axiosHeaders);
+        console.log(res.data);
+        if (res.data.status == "success") {
+          this.templates = res.data.data;
+        }
+      } catch (error) {
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Error getting templates...",
+        });
+        console.log(error);
+        return;
+      }
     },
-    methods: {
-        deleteDevice(device){
-            alert(`DELETING ${device.name}`)
+    createNewDevice() {
+      if (this.newDevice.name == "") {
+        this.$notify({
+          type: "warning",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Device Name is Empty...",
+        });
+        return;
+      }
+      if (this.newDevice.dId == "") {
+        this.$notify({
+          type: "warning",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Device Number is Empty...",
+        });
+        return;
+      }
+      if (this.selectedIndexTemplate == null) {
+        this.$notify({
+          type: "warning",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Template is not Selected...",
+        });
+        return;
+      }
+      const axiosHeaders = {
+        headers: {
+          token: this.$store.state.auth.token,
         },
-        updateSaverRuleStatus(index){
-            console.log(index)
-            this.devices[index].saverRule = !this.devices[index].saverRule
+      };
+      this.newDevice.templateId =
+        this.templates[this.selectedIndexTemplate]._id;
+      this.newDevice.templateName =
+        this.templates[this.selectedIndexTemplate].name;
+      const toSend = {
+        newDevice: this.newDevice,
+      };
+      this.$axios
+        .post("/devices", toSend, axiosHeaders)
+        .then((res) => {
+          if (res.data.status == "success") {
+            this.$notify({
+              type: "success",
+              icon: "tim-icons icon-alert-circle-exc",
+              message: "Device added correctly...",
+            });
+            this.newDevice.name = "";
+            this.newDevice.dId = "";
+            this.selectedIndexTemplate = null;
+            this.$store.dispatch("getDevices");
+            return;
+          }
+        })
+        .catch((e) => {
+          if (
+            e.response.data.status == "error" &&
+            e.response.data.error.errors.dId.kind == "unique"
+          ) {
+            this.$notify({
+              type: "warning",
+              icon: "tim-icons icon-alert-circle-exc",
+              message: "Device already exists. Introduce a new device...",
+            });
+            return;
+          } else {
+            this.showNotify("danger", "Error");
+            return;
+          }
+        });
+    },
+    async deleteDevice(device) {
+      const axiosHeaders = {
+        headers: {
+          token: this.$store.state.auth.token,
         },
-    }
+        params: {
+          userId: device.userId,
+          dId: device.dId,
+        },
+      };
+      console.log(axiosHeaders);
+      try {
+        const res = await this.$axios.delete("/devices", axiosHeaders);
+        if (res.data.status == "success") {
+          this.$notify({
+            type: "success",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: device.name + " was deleted...",
+          });
+        }
+        this.$store.dispatch("getDevices");
+      } catch (error) {
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Error deleting device...",
+        });
+        console.log(error);
+        return;
+      }
+    },
+  },
 };
 </script>
+<style>
+.table-transparent {
+  background-color: transparent !important;
+}
+</style>
